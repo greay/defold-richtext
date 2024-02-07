@@ -3,13 +3,13 @@ local tags = require("richtext.tags")
 
 local M = {}
 
-local function parse_tag(tag, params)
-	local settings = { tags = { [tag] = params }, tag = tag }
-	if not tags.apply(tag, params, settings) then
-		settings[tag] = params
+local function parse_tag(tag, params, word_settings)
+	local tag_settings = { tags = { [tag] = params }, tag = tag }
+	if not tags.apply(tag, params, tag_settings, word_settings) then
+		tag_settings[tag] = params
 	end
 
-	return settings
+	return tag_settings
 end
 
 
@@ -139,7 +139,7 @@ function M.parse(text, default_settings)
 		if is_empty then
 			-- empty tag, ie tag without content
 			-- example <br/> and <img=texture:image/>
-			local empty_tag_settings = parse_tag(name, params)
+			local empty_tag_settings = parse_tag(name, params, word_settings)
 			merge_tags(empty_tag_settings, word_settings)
 			add_word("", empty_tag_settings, all_words)
 		elseif not is_endtag then
@@ -151,7 +151,7 @@ function M.parse(text, default_settings)
 				end
 			else
 				-- open tag - parse and add it
-				local tag_settings = parse_tag(name, params)
+				local tag_settings = parse_tag(name, params, word_settings)
 				open_tags[#open_tags + 1] = tag_settings
 			end
 		else

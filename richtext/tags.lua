@@ -5,13 +5,13 @@ local M = {}
 local tags = {}
 
 
-function M.apply(tag, params, settings)
+function M.apply(tag, params, settings, word_settings)
 	local fn = tags[tag]
 	if not fn then
 		return false
 	end
 	
-	fn(params, settings)
+	fn(params, settings, word_settings)
 	return true
 end
 
