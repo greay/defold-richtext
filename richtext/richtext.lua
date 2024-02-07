@@ -381,6 +381,7 @@ function M.create(text, font, settings)
 	if settings.align == M.ALIGN_JUSTIFY and not settings.width then
 		error("Width must be specified if text should be justified")
 	end
+	settings.ruby_fonts = settings.ruby_fonts or {}
 
 	local line_increment_before = 0
 	local line_increment_after = 1
@@ -401,7 +402,8 @@ function M.create(text, font, settings)
 		color = settings.color,
 		shadow = settings.shadow,
 		outline = settings.outline,
-		size = settings.size
+		size = settings.size,
+		ruby_fonts = settings.ruby_fonts
 	}
 	local words = parser.parse(text, word_settings)
 
@@ -570,6 +572,35 @@ function M.create(text, font, settings)
 			end
 		end
 	end
+
+	-- ruby text
+	local rb = M.tagged(words, "rb")
+	local rt = M.tagged(words, "rt")
+	for i = 1,#rt do
+	end
+	local word_pos, base_metrics = nil, nil
+	local delta,lasty = 0,0
+	for _,word in ipairs(words) do
+		local p = gui.get_position(word.node)
+		
+		-- reset delta on newline
+		if p.y ~= lasty then
+			lasty = p.y
+			delta = 0
+		end
+		
+		p.x = p.x - delta
+		gui.set_position(word.node, p)
+		
+		if word.tag == "rb" then
+			word_pos = p
+			base_metrics = gui.get_text_metrics(word.font, word.text)
+		elseif word.tag == "rt" then
+			gui.set_position(word.node, word_pos + vmath.vector3(0, base_metrics.height, 0))
+			delta = delta + word.metrics.width
+		end
+	end
+
 
 	return words, text_metrics
 end
