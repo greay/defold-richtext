@@ -50,7 +50,15 @@ local function get_font(word, fonts, default_font)
 	local font_settings = fonts[word.tags.font or word.font or default_font]
 	local font = nil
 	if font_settings then
-		if word.bold and word.italic then
+		if word.furigana then
+			font = font_settings.ruby
+			if not font then
+				local base_font = font_settings.regular
+				print("no ruby font for "..base_font.."; adjusting size")
+				-- tags.apply("size", base_size / 2, settings)
+			end
+		end
+		if not font and word.bold and word.italic then
 			font = font_settings.bold_italic
 		end
 		if not font and word.bold then
@@ -381,7 +389,6 @@ function M.create(text, font, settings)
 	if settings.align == M.ALIGN_JUSTIFY and not settings.width then
 		error("Width must be specified if text should be justified")
 	end
-	settings.ruby_fonts = settings.ruby_fonts or {}
 
 	local line_increment_before = 0
 	local line_increment_after = 1
@@ -402,8 +409,7 @@ function M.create(text, font, settings)
 		color = settings.color,
 		shadow = settings.shadow,
 		outline = settings.outline,
-		size = settings.size,
-		ruby_fonts = settings.ruby_fonts
+		size = settings.size
 	}
 	local words = parser.parse(text, word_settings)
 
