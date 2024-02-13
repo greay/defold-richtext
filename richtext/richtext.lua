@@ -602,7 +602,7 @@ function M.create(text, font, settings)
 			word_pos = p
 			base_metrics = gui.get_text_metrics(word.font, word.text)
 		elseif word.tag == "rt" then
-			gui.set_position(word.node, word_pos + vmath.vector3(0, base_metrics.height, 0))
+			gui.set_position(word.node, word_pos + vmath.vector3(0, word.metrics.height, 0))
 			delta = delta + word.metrics.width
 		end
 	end
