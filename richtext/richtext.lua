@@ -145,6 +145,7 @@ local function position_words(words, line_width, line_height, position, settings
 			spacing = (settings.width - words_width) / (word_count - 1)
 		end
 	end
+	local furigana_offset = 0
 	for i=1,#words do
 		local word = words[i]
 		-- align spine animations to bottom of line since
@@ -152,6 +153,9 @@ local function position_words(words, line_width, line_height, position, settings
 		if word.tag == "rt" then
 			word.position_x = position.x - last_width
 			word.position_y = position.y + word.metrics.height
+			if word.metrics.height > furigana_offset then
+				furigana_offset = word.metrics.height
+			end
 		elseif word.spine then
 			position.y = position.y - line_height
 			word.position_x = position.x
@@ -173,9 +177,23 @@ local function position_words(words, line_width, line_height, position, settings
 		end
 
 		position.x = position.x + delta + spacing
-		words[i] = nil
 		last_width = word.metrics.total_width
 	end
+	
+	if furigana_offset > 0 then
+		print("furigana offset is "..furigana_offset)
+		for i=1,#words do
+			local word = words[i]
+			word.position_y = word.position_y - furigana_offset
+		end
+	end
+
+	-- have to do this separately because of the furigana offset
+	for i=1,#words do
+		words[i] = nil
+	end
+
+	return furigana_offset
 end
 
 
@@ -496,7 +514,8 @@ function M.create(text, font, settings)
 			text_metrics.height = text_metrics.height + (line_height * line_increment_before * settings.line_spacing)
 			position.x = settings.position.x
 			position.y = settings.position.y - text_metrics.height
-			position_words(line_words, line_width, line_height, position, settings)
+			local furigana_offset = position_words(line_words, line_width, line_height, position, settings)
+			text_metrics.height = text_metrics.height + furigana_offset
 
 			-- add the word that didn't fit to the next line instead
 			line_words[#line_words + 1] = word
@@ -539,7 +558,8 @@ function M.create(text, font, settings)
 			text_metrics.height = text_metrics.height + (line_height * line_increment_before * settings.line_spacing)
 			position.x = settings.position.x
 			position.y = settings.position.y - text_metrics.height
-			position_words(line_words, line_width, line_height, position, settings)
+			local furigana_offset = position_words(line_words, line_width, line_height, position, settings)
+			text_metrics.height = text_metrics.height + furigana_offset
 
 			-- update text metrics
 			text_metrics.height = text_metrics.height + (line_height * line_increment_after * settings.line_spacing) + paragraph_spacing
@@ -556,8 +576,8 @@ function M.create(text, font, settings)
 		text_metrics.height = text_metrics.height + (line_height * line_increment_before * settings.line_spacing)
 		position.x = settings.position.x
 		position.y = settings.position.y - text_metrics.height
-		position_words(line_words, line_width, line_height, position, settings)
-		text_metrics.height = text_metrics.height + (line_height * line_increment_after * settings.line_spacing)
+		local furigana_offset = position_words(line_words, line_width, line_height, position, settings)
+		text_metrics.height = text_metrics.height + furigana_offset + (line_height * line_increment_after * settings.line_spacing)
 	end
 
 	-- create the nodes (unless doing a dry-run)
