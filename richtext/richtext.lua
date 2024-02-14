@@ -123,6 +123,7 @@ end
 -- position all words according to the line alignment and line width
 -- the list of words will be empty after this function is called
 local function position_words(words, line_width, line_height, position, settings)
+	local last_width = 0
 	if settings.align == M.ALIGN_RIGHT then
 		position.x = position.x - line_width
 	elseif settings.align == M.ALIGN_CENTER then
@@ -148,7 +149,10 @@ local function position_words(words, line_width, line_height, position, settings
 		local word = words[i]
 		-- align spine animations to bottom of line since
 		-- spine animations ignore pivot (always PIVOT_S)
-		if word.spine then
+		if word.tag == "rt" then
+			word.position_x = position.x - last_width
+			word.position_y = position.y + word.metrics.height
+		elseif word.spine then
 			position.y = position.y - line_height
 			word.position_x = position.x
 			word.position_y = position.y
@@ -160,8 +164,17 @@ local function position_words(words, line_width, line_height, position, settings
 			word.position_x = position.x
 			word.position_y = position.y
 		end
-		position.x = position.x + word.metrics.total_width + spacing
+		
+		local delta = 0
+		if word.tag == "rt" and word.metrics.total_width > last_width then
+			delta = word.metrics.total_width - last_width
+		else
+			delta = word.metrics.total_width
+		end
+
+		position.x = position.x + delta + spacing
 		words[i] = nil
+		last_width = word.metrics.total_width
 	end
 end
 
@@ -578,35 +591,6 @@ function M.create(text, font, settings)
 			end
 		end
 	end
-
-	-- ruby text
-	local rb = M.tagged(words, "rb")
-	local rt = M.tagged(words, "rt")
-	for i = 1,#rt do
-	end
-	local word_pos, base_metrics = nil, nil
-	local delta,lasty = 0,0
-	for _,word in ipairs(words) do
-		local p = gui.get_position(word.node)
-		
-		-- reset delta on newline
-		if p.y ~= lasty then
-			lasty = p.y
-			delta = 0
-		end
-		
-		p.x = p.x - delta
-		gui.set_position(word.node, p)
-		
-		if word.tag == "rb" then
-			word_pos = p
-			base_metrics = gui.get_text_metrics(word.font, word.text)
-		elseif word.tag == "rt" then
-			gui.set_position(word.node, word_pos + vmath.vector3(0, word.metrics.height, 0))
-			delta = delta + word.metrics.width
-		end
-	end
-
 
 	return words, text_metrics
 end
