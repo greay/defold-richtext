@@ -152,10 +152,16 @@ local function position_words(words, line_width, line_height, position, settings
 		-- spine animations ignore pivot (always PIVOT_S)
 		if word.tag == "rt" then
 			word.position_x = position.x - last_width
-			word.position_y = position.y + word.metrics.height
-			if word.metrics.height > furigana_offset then
-				furigana_offset = word.metrics.height
+			local ydelta = word.metrics.height
+			if ydelta > furigana_offset then
+				furigana_offset = ydelta
 			end
+			if settings.valign == M.VALIGN_MIDDLE then
+				ydelta = ydelta * 1.5
+			elseif settings.valign == M.VALIGN_BOTTOM then
+				ydelta = ydelta * 2
+			end
+			word.position_y = position.y + ydelta
 		elseif word.spine then
 			position.y = position.y - line_height
 			word.position_x = position.x
