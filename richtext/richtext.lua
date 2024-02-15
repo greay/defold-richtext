@@ -586,6 +586,21 @@ function M.create(text, font, settings)
 		text_metrics.height = text_metrics.height + furigana_offset + (line_height * line_increment_after * settings.line_spacing)
 	end
 
+	-- reposition words according to vertical alignment
+	if settings.parent and settings.valign == M.VALIGN_MIDDLE or settings.valign == M.VALIGN_BOTTOM then
+		local size = gui.get_size(settings.parent)
+		local ydelta = 0
+		if settings.valign == M.VALIGN_MIDDLE then
+			ydelta = (size.y - text_metrics.height) / 2
+		elseif settings.valign == M.VALIGN_BOTTOM then
+			ydelta = size.y - text_metrics.height
+		end
+		for i=1,word_count do
+			local word = words[i]
+			word.position_y = word.position_y - ydelta
+		end
+	end
+	
 	-- create the nodes (unless doing a dry-run)
 	if not settings.dryrun then
 		for i=1,word_count do
