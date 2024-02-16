@@ -423,6 +423,7 @@ function M.create(text, font, settings)
 	settings.image_pixel_grid_snap = settings.image_pixel_grid_snap or false
 	settings.combine_words = settings.combine_words or false
 	settings.dryrun = settings.dryrun or false
+	settings.size_to_fit = settings.size_to_fit or false
 	if settings.align == M.ALIGN_JUSTIFY and not settings.width then
 		error("Width must be specified if text should be justified")
 	end
@@ -613,6 +614,27 @@ function M.create(text, font, settings)
 					gui.set_layer(word.node, layer)
 				end
 			end
+		end
+	end
+
+	-- adjust to fit, if applicable
+	if not settings.dryrun and settings.size_to_fit then
+		local xscale, yscale = 1, 1
+		local size = gui.get_size(settings.parent)
+		if text_metrics.width > size.x then
+			xscale = size.x / text_metrics.width
+		end
+		if text_metrics.height > size.y then
+			yscale = size.y / text_metrics.height
+		end
+		local scale = (xscale < yscale) and xscale or yscale
+		if scale < 1 then
+			for i=1,word_count do
+				local word = words[i]
+				gui.set_scale(word.node, gui.get_scale(word.node) * scale)
+				local new_pos = gui.get_position(word.node) * scale
+				gui.set_position(word.node, new_pos)
+			end		
 		end
 	end
 
