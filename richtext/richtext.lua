@@ -598,9 +598,9 @@ function M.create(text, font, settings)
 		local size = gui.get_size(settings.parent)
 		local ydelta = 0
 		if settings.valign == M.VALIGN_MIDDLE then
-			ydelta = (size.y - text_metrics.height) / 2
+			ydelta = -text_metrics.height / 2
 		elseif settings.valign == M.VALIGN_BOTTOM then
-			ydelta = size.y - text_metrics.height
+			ydelta = -text_metrics.height
 		end
 		for i=1,word_count do
 			local word = words[i]
