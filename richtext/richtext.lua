@@ -537,7 +537,7 @@ function M.create(text, font, settings)
 			text_metrics.width = math.max(text_metrics.width, line_width)
 			text_metrics.height = text_metrics.height + (line_height * line_increment_after * settings.line_spacing) + paragraph_spacing
 			line_width = word_metrics.total_width
-			line_height = word_metrics.height
+			line_height = 0
 			paragraph_spacing = 0
 		else
 			-- the word fits on the line, add it and update text metrics
@@ -576,7 +576,7 @@ function M.create(text, font, settings)
 
 			-- update text metrics
 			text_metrics.height = text_metrics.height + (line_height * line_increment_after * settings.line_spacing) + paragraph_spacing
-			line_height = word_metrics.height
+			line_height = 0
 			line_width = 0
 			paragraph_spacing = 0
 		end
@@ -591,6 +591,7 @@ function M.create(text, font, settings)
 		position.y = settings.position.y - text_metrics.height
 		local furigana_offset = position_words(line_words, line_width, line_height, position, settings)
 		text_metrics.height = text_metrics.height + furigana_offset + (line_height * line_increment_after * settings.line_spacing)
+		line_height = 0
 	end
 
 	-- reposition words according to vertical alignment
