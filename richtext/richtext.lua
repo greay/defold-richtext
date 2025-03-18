@@ -192,7 +192,6 @@ local function position_words(words, line_width, line_height, position, settings
 	end
 	
 	if furigana_offset > 0 then
-		print("furigana offset is "..furigana_offset)
 		for i=1,#words do
 			local word = words[i]
 			word.position_y = word.position_y - furigana_offset
@@ -529,7 +528,7 @@ function M.create(text, font, settings)
 			position.y = settings.position.y - text_metrics.height
 			local furigana_offset = position_words(line_words, line_width, line_height, position, settings)
 			text_metrics.height = text_metrics.height + furigana_offset
-
+			
 			-- add the word that didn't fit to the next line instead
 			line_words[#line_words + 1] = word
 
@@ -567,6 +566,7 @@ function M.create(text, font, settings)
 
 		-- handle line break
 		if word.linebreak then
+			line_height = math.max(line_height, word_metrics.height)
 			-- position all words on the line up until the linebreak
 			text_metrics.height = text_metrics.height + (line_height * line_increment_before * settings.line_spacing)
 			position.x = settings.position.x
