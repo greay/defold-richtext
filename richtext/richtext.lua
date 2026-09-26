@@ -281,13 +281,14 @@ local function get_text_metrics(word, text)
 	text = text or word.text
 
 	local metrics
+	local font = gui.get_font_resource(word.font)
 	if utf8.len(text) == 0 then
-		metrics = gui.get_text_metrics(word.font, "|")
+		metrics = resource.get_text_metrics(font, "|")
 		metrics.width = 0
 		metrics.total_width = 0
 		metrics.height = metrics.height * word.size
 	else
-		metrics = gui.get_text_metrics(word.font, text)
+		metrics = resource.get_text_metrics(font, text)
 		metrics.width = metrics.width * word.size
 		metrics.total_width = metrics.width
 		metrics.height = metrics.height * word.size
